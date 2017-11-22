@@ -1,0 +1,135 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
+from collections import Counter
+from nltk.tokenize import RegexpTokenizer
+import nltk
+import numpy as np
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import string
+import math
+
+def shuffle(matrix, target,test_proportion):
+    ratio = int(matrix.shape[0]/test_proportion)
+    X_train = matrix[ratio:,:]
+    X_test =  matrix[:ratio,:]
+    Y_train = target[ratio:]
+    Y_test =  target[:ratio]
+    return X_train, X_test, Y_train, Y_test
+
+def remove_punctuation(x):
+    try:
+        x=''.join(ch for ch in x if ch not in exclude)
+    except:
+        pass
+    return x
+
+
+df = pd.read_csv('C:/Users/csio/Anaconda3/Scripts/fakereal.csv' ,usecols=['text','label','title'])
+total_docs=7795
+start=0
+stopwords=nltk.corpus.stopwords.words('english')
+# RegEx for stopwords
+RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+
+exclude=set(string.punctuation+'“'+'’'+'—'+'–'+'”'+'?'+'?'+'‘')
+df.text=df.text.apply(remove_punctuation)
+
+allwords=(df.text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )   
+#now we are creating a 2D array
+unique_words=set(allwords)
+l=len(unique_words)
+
+a=np.zeros((total_docs,l),dtype=int)
+ans=np.zeros((total_docs,l),dtype=float)
+dic={}
+j=0
+y=np.zeros(total_docs)
+#har word ko number dia
+for i in unique_words:
+    dic[i]=j
+    j+=1
+
+tot_count={}
+
+for d in range(start,total_docs): #doc ka loop
+    if(df['label'][d]=='REAL'or df['label'][d]=='FAKE'):
+        try:
+            #a[d][0]=(df['label'][d]== 'REAL')
+            y[d]=(df['label'][d]== 'REAL')
+            ans[d][0]=(df['label'][d]== 'REAL')
+            #freq of every word of 1 doc
+       
+            words =df.text[d:d+1]
+
+            word1=(words.str.lower()
+                       .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+                       .str.cat(sep=' ') 
+                       .split()
+            )   
+
+            count = {}
+            tot=0
+            for w in word1: #Us doc k words access karne ka loop 
+                if w in count:
+                    count[w] += 1
+                    tot+=1
+                else:
+                    count[w] = tot=1
+                    try:
+                        tot_count[w]+=1
+                    except:
+                        tot_count[w]=1
+
+            for w1 in count: #word ki freq ko array mey store karane k lie
+                index=dic[w1]
+                a[d][index]=count[w1]
+                ans[d][index]=count[w1]/tot
+        
+        except:
+            word1=[]
+    else:
+        continue
+
+for d in range(start,total_docs): #doc ka loop
+    if(df['label'][d]=='REAL' or df['label'][d]=='FAKE'):
+        try:
+            #a[d][0]=(df['label'][d]== 'REAL')
+                #freq of every word of 1 doc
+
+            words =df.text[d:d+1]
+
+            word1=(words.str.lower()
+                       .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+                       .str.cat(sep=' ') 
+                       .split()
+            ) 
+            count={}
+            for w in word1: #Us doc k words access karne ka loop 
+                if w in count:
+                    count[w] += 1
+                else:
+                    count[w]=1
+
+            for w in count:
+                index=dic[w]
+                ans[d][index]*=math.log(total_docs/tot_count[w])
+                #print(d,index,ans[d][index])
+            #print("ttt")
+        
+        except:
+            word1=[]
+    else:
+        continue
+#splitting the values
+
+X_train, X_test, Y_train, Y_test = shuffle(ans, y,5)
+print("length of training data:",len(X_train),"length of testing data:",len(X_test))
+print("Training data",X_train)
+print("Testing data",X_test)
+print (1)

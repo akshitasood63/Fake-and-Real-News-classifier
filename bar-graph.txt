@@ -1,0 +1,47 @@
+import nltk
+import numpy as np
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import string
+import math
+
+def remove_punctuation(x):
+    try:
+        x=''.join(ch for ch in x if ch not in exclude)
+    except:
+        pass
+    return x
+
+df = pd.read_csv('C:/Users/csio/Anaconda3/Scripts/sonpesfinaldataset.csv' ,usecols=['headline','content'])
+
+
+stopwords=nltk.corpus.stopwords.words('english')
+# RegEx for stopwords
+RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+
+exclude=set(string.punctuation+'“'+'’'+'—'+'–'+'”'+'?'+'?'+'‘')
+df.headline=df.headline.apply(remove_punctuation)
+
+lst=[]
+for d in range(0,200): #doc ka loop
+        #freq of every word of 1 doc
+    words =df.headline[d:d+1]
+    word1=(words.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )  
+    lst.append(len(word1))
+print (lst)
+
+'''number=[i for i in range(0,200)]
+values = [x for x in lst]
+mybar = plt.bar(number, values, color='red', alpha=0.9)
+
+
+plt.xlabel('headline number')
+plt.ylabel('word count')
+plt.title('Word Frequency Chart')
+
+
+plt.show()'''

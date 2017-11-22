@@ -1,0 +1,66 @@
+import pandas as pd
+from collections import Counter
+from nltk.tokenize import RegexpTokenizer
+import nltk
+import numpy as np
+import string
+
+def remove_punctuation(x):
+    try:
+        x=''.join(ch for ch in x if ch not in exclude)
+    except:
+        pass
+    return x
+
+top=50
+df = pd.read_csv('C:/Users/csio/Anaconda3/Scripts/fakereal.csv' ,usecols=['text','label'])
+
+
+stopwords=nltk.corpus.stopwords.words('english')
+# RegEx for stopwords
+RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+
+exclude=set(string.punctuation+'“'+'’'+'—'+'–'+'”'+'?'+'?'+'‘')
+df.text=df.text.apply(remove_punctuation)
+
+allwords=(df.text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )   
+#now we are creating a 2D array
+unique_words=set(allwords)
+l=len(unique_words)
+
+a=np.zeros((10,89495),dtype=int)
+
+dic={}
+j=0
+#har word ko number dia
+for i in unique_words:
+    dic[i]=j
+    j+=1
+
+
+for d in range(0,10): #doc ka loop
+    #freq of every word of 1 doc
+    words =df.text[d:d+1]
+    
+    word1=(words.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )   
+    count = {}
+    for w in word1: #Us doc k words access karne ka loop 
+        if w in count:
+            count[w] += 1
+        else:
+            count[w] = 1
+
+    for w1 in count: #word ki freq ko array mey store karane k lie
+        index=dic[w1]
+        a[d][index]=count[w1]
+    '''for w1 in count:
+        print(a[d][dic[w1]],end=" ")'''
+print (a)

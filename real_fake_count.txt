@@ -1,0 +1,51 @@
+import pandas as pd
+from collections import Counter
+from nltk.tokenize import RegexpTokenizer
+import nltk
+import string
+
+def remove_punctuation(x):
+    try:
+        x=''.join(ch for ch in x if ch not in exclude)
+    except:
+        pass
+    return x
+
+top=50
+df = pd.read_csv('C:/Users/csio/Anaconda3/Scripts/fakereal.csv' ,usecols=['text','label'])
+
+
+stopwords=nltk.corpus.stopwords.words('english')
+# RegEx for stopwords
+RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+
+exclude=set(string.punctuation+'“'+'’'+'—'+'–'+'”'+'?'+'?'+'‘')
+df.text=df.text.apply(remove_punctuation)
+
+allwords=(df.text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )   
+# replace '|'-->' ' and drop all stopwords
+words = (df.loc[df['label'] == 'REAL'].text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )   
+words1 = (df.loc[df['label'] == 'FAKE'].text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ')
+               .split()
+    )   
+
+# generate DF out of Counter
+rslt = pd.DataFrame(Counter(words).most_common(top),
+                    columns=['Word', 'Frequency']).set_index('Word')
+rslt1 = pd.DataFrame(Counter(words1).most_common(top),
+                    columns=['Word', 'Frequency']).set_index('Word')
+print('      REAL NEWS')
+print(rslt)
+print('\n    FAKE NEWS')
+print(rslt1)
+ 

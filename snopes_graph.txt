@@ -1,0 +1,83 @@
+#program to create graphs of word count
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
+from collections import Counter
+from nltk.tokenize import RegexpTokenizer
+import nltk
+import numpy as np
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import string
+import math
+
+#function to remove punctuation from text
+def remove_punctuation(x):
+    try:
+        x=''.join(ch for ch in x if ch not in exclude)
+    except:
+        pass
+    return x
+
+#enter the location of the csv file
+df = pd.read_csv('C:/Users/csio/Anaconda3/Scripts/sonpesfinaldataset.csv' ,usecols=['headline','content'])
+
+#removing stopwords
+stopwords=nltk.corpus.stopwords.words('english')
+# RegEx for stopwords
+RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+
+#removing puncatuation by calling 'remove_punctuation'
+exclude=set(string.punctuation+'“'+'’'+'—'+'–'+'”'+'?'+'?'+'‘')
+df.headline=df.headline.apply(remove_punctuation)
+
+#graph1=================================
+#to plot graph between number of headlines and unique number of words present in their title.
+lst=[]
+for d in range(0,200): #documents's loop
+    #freq of every word in 1 doc
+    words =df.headline[d:d+1]
+    word1=(words.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )  
+    lst.append(len(word1))
+
+
+
+
+
+#plt.subplot(2,1,1)
+bins = np.arange(0, 15, 2) # fixed bin size
+plt.hist(lst, bins=bins, alpha=0.8)
+plt.title('word distribution')
+plt.xlabel('word count')
+plt.ylabel('no. of headlines')
+plt.grid()
+plt.ylim(0,120)
+plt.show()
+
+#graph2=================================
+#to plot graph between number of headlines and unique number of words present in their content.
+
+#plt.subplot(2,1,2)
+lst2=[]
+for d in range(0,200): #documents's loop
+        #freq of every word in 1 document's content
+    words =df.content[d:d+1]
+    word2=(words.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ') 
+               .split()
+    )  
+    lst2.append(len(word2))
+bins = np.arange(0, 900, 50) # fixed bin size
+plt.hist(lst2, bins=bins, alpha=0.8,color='red')
+plt.title('word distribution')
+plt.xlabel('word count')
+plt.ylabel('no. of news')
+plt.grid()
+plt.ylim(0,80)
+plt.show()
